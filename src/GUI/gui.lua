@@ -3,22 +3,20 @@ GUI.__index = GUI
 
 function GUI:new()
     return setmetatable({
-        game = {
-            mainMenu = {}
-        }
+        currentWindow = nil
     }, GUI)
 end
 
+function GUI:setWindow(window)
+    self.currentWindow = window
+end
+
 function GUI:update()
-    for i, component in pairs(self.game.mainMenu) do
-        component:update()
-    end
+    self.currentWindow:update()
 end
 
 function GUI:draw()
-    for i, component in pairs(self.game.mainMenu) do
-        component:draw()
-    end
+    self.currentWindow:draw()
 end
 
 return GUI

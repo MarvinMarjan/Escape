@@ -1,11 +1,15 @@
-Button = {}
-Button.__index = Button
+CheckBox = {}
+CheckBox.__index = CheckBox
 
-function Button:new(x, y, width, height, rx, ry, text, color, audio, event)
-    if not rx then rx = 0 end
-    if not ry then ry = 0 end
+function CheckBox:new(x, y, width, height, rx, ry, color, audio, event)
+    if not width then width = 25 end
+    if not height then height = 25 end
+
+    if not rx then rx = 3 end
+    if not ry then ry = 3 end
 
     if not event then 
+
         event = {
             onClick = function() end,
             onHover = function() end
@@ -27,22 +31,6 @@ function Button:new(x, y, width, height, rx, ry, text, color, audio, event)
     if not color.hover then color.hover = {color.default[1] - 0.2, color.default[2] - 0.2, color.default[3] - 0.2, 1} end
     if not color.pressed then color.pressed = {color.default[1] - 0.4, color.default[2] - 0.4, color.default[3] - 0.4, 1} end
 
-    if not text then
-        text = {
-            content = "",
-            font = love.graphics.newFont("GUI/Fonts/arial.ttf", 20),
-            scale = 1,
-            color = {0, 0, 0, 1}
-        }
-
-        text.font:setFilter("nearest", "nearest")
-    end
-
-    if not text.content then text.content = "" end
-    if not text.font then text.font = love.graphics.newFont("GUI/Fonts/arial.ttf", 20) end
-    if not text.scale then text.scale = 1 end
-    if not text.color then text.color = {0, 0, 0, 1} end
-
     if not audio then
         audio = {
             hover = love.audio.newSource("Audios/GUI_Sounds/Button/hover.mp3", "static"),
@@ -62,8 +50,6 @@ function Button:new(x, y, width, height, rx, ry, text, color, audio, event)
         width = width,
         height = height,
 
-        text = text,
-
         event = event,
 
         audio = audio,
@@ -72,15 +58,17 @@ function Button:new(x, y, width, height, rx, ry, text, color, audio, event)
 
         color = color,
 
+        selected = false,
+
         isHover = nil,
         clicked = nil,
         clicked2 = nil,
         enter = nil,
         tap = nil
-    }, Button)
+    }, CheckBox)
 end
 
-function Button:checkEvents()
+function CheckBox:checkEvents()
     if mouseCollide(self.x, self.y, self.width, self.height) then
         if love.mouse.isDown(1) then self.event.onClick() end
 
@@ -88,7 +76,7 @@ function Button:checkEvents()
     end
 end
 
-function Button:update()
+function CheckBox:update()
     -- check for events
     self:checkEvents()
 
@@ -121,7 +109,10 @@ function Button:update()
             self.currentColor = self.color.pressed
 
             -- plays the click sound
-            if self.tap then love.audio.play(self.audio.click) end
+            if self.tap then 
+                love.audio.play(self.audio.click)
+                self.selected = not self.selected 
+            end
         else
             self.currentColor = self.color.hover
         end
@@ -131,21 +122,11 @@ function Button:update()
 end
 
 -- drawing function
-function Button:draw()
+function CheckBox:draw()
+    if self.selected then drawFilledSymbol(self.x, self.y) end
+
     love.graphics.setColor(self.currentColor)
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, self.rx, self.ry)
-
-    love.graphics.setColor(self.text.color)
-    love.graphics.setFont(self.text.font)
-    drawCenteredText(self.x, self.y, self.width, self.height, self.text.content, self.text.scale)
-end
-
--- draws a centered text
-function drawCenteredText(rectX, rectY, rectWidth, rectHeight, text, scale)
-	local font = love.graphics.getFont()
-	local textWidth = font:getWidth(text)
-	local textHeight = font:getHeight()
-	love.graphics.print(text, rectX+rectWidth/2, rectY+rectHeight/2, 0, scale, scale, textWidth/2, textHeight/2)
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height, self.rx, self.ry)
 end
 
 -- checks if the mouse is colliding with a rectangle
@@ -158,4 +139,12 @@ function mouseCollide(x, y, width, height)
     end
 end
 
-return Button
+function drawFilledSymbol(x, y)
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.setLineWidth(2)
+    love.graphics.line(x + 4, y + 11, x + 10, y + 20)
+    love.graphics.line(x + 10, y + 20, x + 24, y + 2)
+    love.graphics.setLineWidth(0)
+end
+
+return CheckBox
